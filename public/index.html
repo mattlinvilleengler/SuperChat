@@ -1,0 +1,315 @@
+<!DOCUMENT html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<title>SuperChat</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js" integrity="sha384-3ceskX3iaEnIogmQchP8opvBy3Mi7Ce34nWjpBIwVTHfGYWQS9jwHDVRnpKKHJg7"
+		crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.3.7/js/tether.min.js" integrity="sha384-XTs3FgkjiBgo8qjEjBk0tGmf3wPrWtA6coPfQDfFEY8AnYJwjalXCiosYRBIBZX8"
+		crossorigin="anonymous"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK"
+		crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi"
+		crossorigin="anonymous">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK"
+		crossorigin="anonymous"></script>
+	<script src="https://use.fontawesome.com/e84f46fd07.js"></script>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+  <style>
+        .shadow {box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12) }
+        .point {cursor:pointer}
+  </style>
+
+
+	<script src="https://www.gstatic.com/firebasejs/3.6.0/firebase.js"></script>
+	<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyDxfrVVrYtO6q305pHmanZiJ1aAw6lxO4M",
+    authDomain: "superchat-add30.firebaseapp.com",
+    databaseURL: "https://superchat-add30.firebaseio.com",
+    storageBucket: "superchat-add30.appspot.com",
+    messagingSenderId: "138294601760"
+  };
+  firebase.initializeApp(config);
+</script>
+
+</head>
+
+<body style="background-color:#f9f9f9;">
+  <nav class="navbar navbar-light bg-faded shadow" style="background-color:white;">
+    <div class="col-xs-12 ">
+  <a class="navbar-brand" href="#"><h1 style="margin-right: 2px;">SuperChat</h1></a>
+  <i class="material-icons" style="font-size:32px; float:left; margin-right: 25px; color:#02a8f3">donut_large</i></span>
+
+  <i id="account" class="material-icons point" style="float:right; font-size:32px; margin-top:5px; margin-right:10px;">account_box</i>
+  
+    </div>
+</nav>
+
+
+
+	<div class="container-fluid" style="margin: 2% 0;">
+    <div class="col-xs-12 col-lg-4">
+    <div id="map" class="shadow" style="height:40%; margin-bottom: 2%;"></div>
+</div>
+		<div class="col-xs-12 col-lg-8 ">
+				
+			<div class="input-group ">
+				<input id="message" type="text" class="form-control" placeholder="Message" aria-describedby="basic-addon2">
+				<span id="send" class="input-group-addon point" id="basic-addon2" style="background-color: #02a8f3; padding: 0px 2%;">
+      <i class="material-icons" style="font-size:32px;">add</i></span>
+			</div>
+			<div style="margin-top: 1%;">
+				<ul class="list-group " id="chatBox" style=" ">
+				</ul>
+			</div>
+		</div>
+
+	</div>
+
+  <div id="wash" style="z-index:50000; width:100%; height:100%; top: 0; left:0; position:absolute; background-color: rgba(0,0,0,.75); transition-duration: .2s; display:none;"></div>
+
+  <div id="modal" class=" shadow"style=" z-index:60000; width:auto; max-width: 250px; height:auto; left: 39%; top:10%; position:absolute; background-color: white; transition-duration: .2s; display:none; padding:35px;">
+    <h6> Add your name or stay anonymous</h6>
+      <input id="name" type="text" class="form-control" placeholder="Your Name" aria-describedby="basic-addon2" style="margin-top:15px;  width:180px; ">
+      <span id= "close" class="point"style="position:absolute; top:9px; right:15px; font-size:18px; font-weight:600;">X</span>
+  </div>
+  
+
+   <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD3YMAu1AtMugtF2qDEiHzhdGhJ1AYayGU
+        &libraries=visualization&callback=initMap">
+    </script>
+
+	<script>
+        // --------------------------------------------request permission on page load
+document.addEventListener('DOMContentLoaded', function () {
+  if (!Notification) {
+    alert('Desktop notifications not available in your browser. Try Chromium.'); 
+    return;
+  }
+  if (Notification.permission !== "granted")
+    Notification.requestPermission();
+});
+
+function notifyMe(name, message) {
+  if (Notification.permission !== "granted")
+    Notification.requestPermission();
+  else {
+    var notification = new Notification('Super Message', {
+      //icon: 'http://cdn.sstatic.net/stackexchange/img/logos/so/so-icon.png',
+      body: `${name}\n${message}`,
+    });
+  }
+        // --------------------------------------------end
+
+}
+        var database = firebase.database();
+        var fresh = true;
+        var latitude;
+        var longitude;
+        var points = [];
+
+        var stack = document.getElementById('chatBox');
+           document.getElementById('send').addEventListener("click", function(){
+            sendMessage();
+        });
+        document.getElementById('account').addEventListener("click", function(){
+            openModal();
+        });
+         document.getElementById('close').addEventListener("click", function(){
+            closeModal();
+        });
+
+        function openModal(){
+          document.getElementById('wash').style.display = "block"
+          document.getElementById('modal').style.display = "block"
+        }
+        function closeModal(){
+           document.getElementById('wash').style.display = "none"
+          document.getElementById('modal').style.display = "none"
+        }
+
+        function navSuccess(position){
+             latitude  = position.coords.latitude;
+             longitude = position.coords.longitude;
+        }
+navigator.geolocation.getCurrentPosition(navSuccess);
+        document.getElementById('name').value = window.localStorage.getItem("name") || "";
+
+        
+        database.ref('messages/').on('value', function (snapshot) {
+            response = snapshot.val();
+            updateMessageStack(response);
+
+        });
+
+        window.addEventListener("keydown", function (e) {
+           if (e.keyCode === 13) {  //checks whether the pressed key is "Enter"
+                sendMessage();
+            }
+        });
+
+        function sendMessage(){
+            var message = document.getElementById('message').value;
+            var name = document.getElementById('name').value;
+            var date = new Date().getTime();
+            window.localStorage.setItem("name", name);
+            
+            name = name.length > 0 ? name : "Anonymous";
+            database.ref("messages/").push({ "message": message, "name": name, "date": date, "lat": latitude, "long": longitude });
+            document.getElementById('message').value = "";
+        }
+
+        function updateMessageStack(response){
+          points = [];
+            var messages = ''
+            var name;
+            var message;
+            var date;
+            for (var x in response){
+              date = new Date(response[x].date);
+                messages = `<li class="list-group-item list-group-item-action">
+                  <div style="float:right">
+						<span class="tag tag-default tag-pill float-xs-right" style="margin-top: -5px;">
+              ${response[x].name || "Anonymous"}</span> <br>
+              <span style="font-size:10px; display:inline-block; margin-top:-7px">
+              ${date.toLocaleDateString()} ${date.toLocaleTimeString()}
+              </span> 
+              </div>
+              ${response[x].message}
+					</li>` + messages;
+          name = response[x].name;
+          message = response[x].message;
+          points.push({lat: response[x].lat, long: response[x].long })
+            }
+            stack.innerHTML = messages;
+            if(!fresh){
+              notifyMe(name, message);
+            }
+            fresh = false;
+            updateMap();
+        };
+        function updateMap(){
+          if(heatmap && points.length > 0){
+            points.forEach(function(x){
+                var point = new google.maps.LatLng(+x.lat, +x.long);
+                heatmap.getData().push(point);
+            })
+          }
+        }
+
+        </script>
+
+    <script>
+      var heatmap;
+      function initMap() {
+  var map = new google.maps.Map(document.getElementById('map'), {
+    center: {lat: 0, lng: 0},
+    zoom: 1,
+    styles: [{
+      featureType: 'poi',
+      stylers: [{ visibility: 'off' }]
+    },  // Turn off points of interest.
+              {elementType: 'geometry', stylers: [{color: '#242f3e'}]},
+            {elementType: 'labels.text.stroke', stylers: [{color: '#242f3e'}]},
+            {elementType: 'labels.text.fill', stylers: [{color: '#746855'}]},
+            {
+              featureType: 'administrative.locality',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#d59563'}]
+            },
+            {
+              featureType: 'poi',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#d59563'}]
+            },
+            {
+              featureType: 'poi.park',
+              elementType: 'geometry',
+              stylers: [{color: '#263c3f'}]
+            },
+            {
+              featureType: 'poi.park',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#6b9a76'}]
+            },
+            {
+              featureType: 'road',
+              elementType: 'geometry',
+              stylers: [{color: '#38414e'}]
+            },
+            {
+              featureType: 'road',
+              elementType: 'geometry.stroke',
+              stylers: [{color: '#212a37'}]
+            },
+            {
+              featureType: 'road',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#9ca5b3'}]
+            },
+            {
+              featureType: 'road.highway',
+              elementType: 'geometry',
+              stylers: [{color: '#746855'}]
+            },
+            {
+              featureType: 'road.highway',
+              elementType: 'geometry.stroke',
+              stylers: [{color: '#1f2835'}]
+            },
+            {
+              featureType: 'road.highway',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#f3d19c'}]
+            },
+            {
+              featureType: 'transit',
+              elementType: 'geometry',
+              stylers: [{color: '#2f3948'}]
+            },
+            {
+              featureType: 'transit.station',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#d59563'}]
+            },
+            {
+              featureType: 'water',
+              elementType: 'geometry',
+              stylers: [{color: '#17263c'}]
+            },
+            {
+              featureType: 'water',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#515c6d'}]
+            },
+            {
+              featureType: 'water',
+              elementType: 'labels.text.stroke',
+              stylers: [{color: '#17263c'}]
+            }, 
+            {
+      featureType: 'transit.station',
+      stylers: [{ visibility: 'off' }]  // Turn off bus stations, train stations, etc.
+    }],
+    disableDoubleClickZoom: false,
+  });
+  // Create a heatmap.
+heatmap = new google.maps.visualization.HeatmapLayer({
+  data: [],
+  map: map,
+  radius: 16
+});
+
+}
+    </script>
+
+</body>
+
+</html>
